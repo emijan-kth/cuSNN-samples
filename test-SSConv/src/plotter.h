@@ -2,7 +2,7 @@
 #define H_PLOTTER
 
 #ifdef OPENGL
-#include <GL/freeglut.h>
+#include "GL/freeglut.h"
 #endif
 #include <cmath>
 #include <algorithm>
@@ -37,6 +37,7 @@ public:
 
     /* FUNCTIONS */
     Weights(Network *SNN, int idx, int l, int d);
+    static void display() {}
 };
 
 
@@ -50,6 +51,7 @@ public:
 
     /* FUNCTIONS */
     Spikes(Network *SNN, int idx);
+    static void display() {}
 };
 
 
@@ -63,6 +65,7 @@ public:
 
     /* FUNCTIONS */
     Trace(Network *SNN, int idx);
+    static void display() {}
 };
 
 

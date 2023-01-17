@@ -80,6 +80,7 @@ Trace::Trace(Network *SNN, int idx) {
             " -- Post-synaptic trace";
     const char* title_char = title.c_str();
     this->WindowID = glutCreateWindow(title_char);
+    glutDisplayFunc(Trace::display);
     glClearColor(0.f, 0.f, 0.f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -118,6 +119,7 @@ Weights::Weights(Network *SNN, int idx, int l, int d) {
             " -- Weights (" + std::to_string(SNN->h_layers[l]->h_delay_indices[d]) + "ms delay)";
     const char* title_char = title.c_str();
     this->WindowID = glutCreateWindow(title_char);
+    glutDisplayFunc(Weights::display);
     glClearColor(0.f, 0.f, 0.f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -141,6 +143,7 @@ Spikes::Spikes(Network *SNN, int idx) {
             " -- Activity";
     const char* title_char = title.c_str();
     this->WindowID = glutCreateWindow(title_char);
+    glutDisplayFunc(Spikes::display);
     glClearColor(0.f, 0.f, 0.f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -191,6 +194,9 @@ plotterGL::plotterGL(Network *SNN, std::vector<int> kernels, std::string snapsho
         input_window = glutCreateWindow("Input");
         glClearColor(0.f, 0.f, 0.f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT);
+        glutDisplayFunc(plotterGL::display);
+        glutKeyboardFunc(plotterGL::keyboard);
+        glutTimerFunc(0, plotterGL::timerEvent, 0);
     }
 
     // initialize windows for weights
@@ -231,9 +237,6 @@ plotterGL::plotterGL(Network *SNN, std::vector<int> kernels, std::string snapsho
 
     // register callbacks
     plotter_static = this;
-    glutDisplayFunc(plotterGL::display);
-    glutKeyboardFunc(plotterGL::keyboard);
-    glutTimerFunc(0, plotterGL::timerEvent, 0);
 }
 
 
