@@ -1,3 +1,5 @@
+#include <direct.h>
+
 #include "data.h"
 
 
@@ -185,7 +187,7 @@ void weights_to_csv(std::string& foldername, Network *&SNN) {
     struct stat sb;
     folder += std::string("weights/");
     if (stat(folder.c_str(), &sb) != 0) {
-        const int dir_err = mkdir(folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        const int dir_err = mkdir(folder.c_str());
         if (-1 == dir_err) {
             printf("Error: weights_dir could not be created\n");
             return;
@@ -193,7 +195,7 @@ void weights_to_csv(std::string& foldername, Network *&SNN) {
     }
     folder += foldername;
     if (stat(folder.c_str(), &sb) != 0) {
-        const int dir_err = mkdir(folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        const int dir_err = mkdir(folder.c_str());
         if (-1 == dir_err) {
             printf("Error: weights_dir could not be created\n");
             return;
@@ -463,7 +465,7 @@ void activity_to_npy(Network *&SNN, std::string snapshot_dir, std::string folder
     std::string foldername, foldername_sub, filename;
     foldername = snapshot_dir + std::string("/") + folder + std::string("/");
     if (stat(foldername.c_str(), &sb) != 0) {
-        const int dir_err = mkdir(foldername.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        const int dir_err = mkdir(foldername.c_str());
         if (-1 == dir_err) {
             std::cout << foldername;
             printf("Error: snapshots_dir could not be created\n");
@@ -473,7 +475,7 @@ void activity_to_npy(Network *&SNN, std::string snapshot_dir, std::string folder
 
     foldername_sub = foldername + std::to_string(run) + std::string("_") + std::to_string(step) + std::string("/");
     if (stat(foldername_sub.c_str(), &sb) != 0) {
-        const int dir_err = mkdir(foldername_sub.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        const int dir_err = mkdir(foldername_sub.c_str());
         if (-1 == dir_err) {
             std::cout << foldername_sub;
             printf("Error: snapshots_dir could not be created\n");
