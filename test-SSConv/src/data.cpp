@@ -97,36 +97,10 @@ void feed_network(const std::string& dataset_dir, std::vector<std::string>& data
 
             // assign events
             ets *= scale_ets;
-            if (cnt_step >= idx_step) {
-                ey = (int) ((float) ey / SNN->inp_scale[0]);
-                ex = (int) ((float) ex / SNN->inp_scale[1]);
 
-                if (horizontal_flip)
-                    ex = ex + 2 * (SNN->h_inp_size[2] / 2 - ex) - 1;
-                if (vertical_flip)
-                    ey = ey + 2 * (SNN->h_inp_size[1] / 2 - ey) - 1;
-                if (invert_polarity)
-                    ep = ep ? 0 : 1;
-                if (ex < 0) ex = 0;
-                if (ey < 0) ey = 0;
-
-                if (ep < 0 || ep >= SNN->h_inp_size[0] ||
-                    ey < 0 || ey >= SNN->h_inp_size[1] ||
-                    ex < 0 || ex >= SNN->h_inp_size[2]) std::cout << "Error: event location out of range.\n";
-                else {
-                    int idx_node = ex * SNN->h_inp_size[1] + ey;
-                    int idx = ep * SNN->h_inp_size[1] * SNN->h_inp_size[2] * SNN->h_length_delay_inp[0] +
-                            idx_node * SNN->h_length_delay_inp[0];
-                    SNN->h_inputs[idx]++;
-
-                    int idx_ets = ep * SNN->h_inp_size[1] * SNN->h_inp_size[2] + idx_node;
-                    inputs_ets[idx_ets] = ets;
-                }
-            }
-
-            if (ets > ref_time) {
-                if (!cnt_step) ref_time = (int) (ets + sim_step * 1000.f);
-                else ref_time += (int) (sim_step * 1000.f);
+            while (ets > ref_time) {
+                if (!cnt_step) ref_time = (int)(ets + sim_step * 1000.f);
+                else ref_time += (int)(sim_step * 1000.f);
 
                 if (cnt_step >= idx_step) {
 
@@ -164,6 +138,36 @@ void feed_network(const std::string& dataset_dir, std::vector<std::string>& data
                 cnt_step++;
                 if ((cnt_step - idx_step) > sim_num_steps) break;
             }
+            if ((cnt_step - idx_step) > sim_num_steps) break;
+
+
+            if (cnt_step >= idx_step) {
+                ey = (int) ((float) ey / SNN->inp_scale[0]);
+                ex = (int) ((float) ex / SNN->inp_scale[1]);
+
+                if (horizontal_flip)
+                    ex = ex + 2 * (SNN->h_inp_size[2] / 2 - ex) - 1;
+                if (vertical_flip)
+                    ey = ey + 2 * (SNN->h_inp_size[1] / 2 - ey) - 1;
+                if (invert_polarity)
+                    ep = ep ? 0 : 1;
+                if (ex < 0) ex = 0;
+                if (ey < 0) ey = 0;
+
+                if (ep < 0 || ep >= SNN->h_inp_size[0] ||
+                    ey < 0 || ey >= SNN->h_inp_size[1] ||
+                    ex < 0 || ex >= SNN->h_inp_size[2]) std::cout << "Error: event location out of range.\n";
+                else {
+                    int idx_node = ex * SNN->h_inp_size[1] + ey;
+                    int idx = ep * SNN->h_inp_size[1] * SNN->h_inp_size[2] * SNN->h_length_delay_inp[0] +
+                            idx_node * SNN->h_length_delay_inp[0];
+                    SNN->h_inputs[idx]++;
+
+                    int idx_ets = ep * SNN->h_inp_size[1] * SNN->h_inp_size[2] + idx_node;
+                    inputs_ets[idx_ets] = ets;
+                }
+            }
+
         }
         fclose(fp);
     }
