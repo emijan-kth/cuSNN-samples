@@ -1,4 +1,5 @@
 /train-SSConv/build/*
+/train-SSConv-real/build/*
 /test-SSConv/build/*
 /train-MSConv/build/*
 /test-MSConv/build/*
@@ -15,6 +16,7 @@
 !/record-spikes/build/.gitignore
 
 /train-SSConv/weights/
+/train-SSConv-real/weights/
 /test-SSConv/weights/
 /train-MSConv/weights/
 /test-MSConv/weights/
@@ -64,3 +66,8 @@
 .project
 *.xml
 *.iml
+
+/data/real_moving/
+/data/real_stationary/
+/data/simulated_data/
+/weights/simulated_data/

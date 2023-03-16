@@ -31,25 +31,25 @@ int main(int argc, char** argv){
     /////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // dataset
-    const std::string dataset_dir = "../data/roadmap";
-    const int inp_size[] = {2, 264, 320}; // (channels, height, width)
-    const float inp_scale[] = {2.f, 2.f}; // (height, width)
+    const std::string dataset_dir = "../data/simulated_data";
+    const int inp_size[] = {2, 25, 25}; // (channels, height, width)
+    const float inp_scale[] = {1.f, 1.f}; // (height, width)
 
     // simulation settings
     const int runs = 1000000;
-    const float sim_time = 150.f; // ms
+    const float sim_time = 30.f; // ms
     const float sim_step = 1.f; // ms
     const float sim_int = 1.f; // sim_steps input integration
     const float scale_ets = 1.f;
 
     const bool openGL = true;
     const bool load_model = false;
-    const bool store_model_it = true;
+    const bool store_model_it = false;
     const bool record_activity = false;
     const bool data_augmentation = true;
-    const int store_model_it_gap = -1;
+    const int store_model_it_gap = 1000;
     std::vector<int> kernels_display_idx = {0, 128};
-    std::string weights_dir = "../weights/roadmap";
+    std::string weights_dir = "../weights/simulated_data";
     std::string snapshots_dir = "../cuSNN_snapshots";
 
     // neuron and synapse models
@@ -84,11 +84,11 @@ int main(int argc, char** argv){
                        float synapse_inh_scaling = 0.f, int rf_side = 7, int out_channels = 8,
                        std::string padding = "none", float w_init = 0.5f); */
     SNN->h_layers = (Layer **) malloc(sizeof(Layer*) * 5);
-    SNN->add_layer("Conv2d", true, true, true, 0.4f, 5.f, 0.25f, 1.f, 1, 0.f, 5, 16, "half");
+    SNN->add_layer("Conv2d", true, true, true, 0.5f, 5.f, 0.4f, 1.f, 1, 0.f, 7, 4, "none");
     SNN->create_network(break_sim);
 
     /* LEARNING RULE */
-    SNN->enable_stdp_paredes(0.001f, 0.f, 0.075f, 10, true, 250, break_sim);
+    SNN->enable_stdp_paredes(0.0002f, 0.f, 0.075f, 10, true, 250, break_sim);
 //    SNN->enable_stdp_shrestha(0.0001f, 5.f, false, 1.f, 10, true, break_sim);
 //    SNN->enable_stdp_kheradpisheh(0.0001f, 10, true, break_sim);
 
@@ -165,7 +165,29 @@ int main(int argc, char** argv){
             std::string weights_out_aux = weights_out + std::string("_r") + std::to_string(r);
             weights_to_csv(weights_out_aux, SNN);
             std::cout << "\nRun " << r << ": Weights stored at " << std::string("weights/") + weights_out_aux << "\n";
+
         }
+
+        SNN->copy_to_host();
+
+        std::string stdp_convg;
+
+        int idx = 0;
+        for (int l = 0; l < SNN->cnt_layers; l++) {
+            stdp_convg += std::string("l: ") + std::to_string(l);
+            for (int d = 0; d < SNN->h_layers[l]->num_delays; d++) {
+                stdp_convg += std::string(", d: ") + std::to_string(d);
+                for (int k = 0; k < SNN->h_layers[l]->cnt_kernels; k++) {
+
+                    stdp_convg += std::string(", k") + std::to_string(k);
+                    if (SNN->h_layers[l]->enable_learning && !d && SNN->h_layers[l]->learning_type == 1)
+                        stdp_convg += std::string(" = ") +
+                                std::to_string(SNN->h_layers[l]->h_kernels[k]->stdp_paredes_objective_avg);
+                }
+            }
+        }
+
+        std::cout << stdp_convg;
 
         // print progress
         auto t1 = Time::now();

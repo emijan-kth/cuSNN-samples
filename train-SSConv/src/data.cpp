@@ -97,6 +97,50 @@ void feed_network(const std::string& dataset_dir, std::vector<std::string>& data
 
             // assign events
             ets *= scale_ets;
+
+            while (ets > ref_time) {
+                if (!cnt_step) ref_time = (int)(ets + sim_step * 1000.f);
+                else ref_time += (int)(sim_step * 1000.f);
+
+                if (cnt_step >= idx_step) {
+
+                    // input integration time different than simulation step
+                    for (int ch = 0; ch < SNN->h_inp_size[0] && sim_step != sim_int; ch++) {
+                        for (int rows = 0; rows < SNN->h_inp_size[1]; rows++) {
+                            for (int cols = 0; cols < SNN->h_inp_size[2]; cols++) {
+                                int idx_node = cols * SNN->h_inp_size[1] + rows;
+                                int idx = ch * SNN->h_inp_size[1] * SNN->h_inp_size[2] *
+                                        SNN->h_length_delay_inp[0] + idx_node * SNN->h_length_delay_inp[0];
+                                int idx_ets = ch * SNN->h_inp_size[1] * SNN->h_inp_size[2] + idx_node;
+                                if (inputs_ets[idx_ets] > (float) ref_time - (sim_int + 1.f) * sim_step * 1000.f)
+                                    SNN->h_inputs[idx]++;
+                                else
+                                    SNN->h_inputs[idx] = 0;
+                            }
+                        }
+                    }
+
+                    // feed the network
+                    SNN->feed(break_feed);
+                    if (break_feed) break;
+                    SNN->copy_to_host();
+                    #ifdef OPENGL
+                    if (openGL && !break_sim_data) {
+                        plotter->update(SNN, cnt_step-idx_step);
+                    }
+                    #endif
+                    #ifdef NPY
+                    if (record_activity)
+                        activity_to_npy(SNN, snapshots_dir, weights_out, cnt_runs, cnt_step-idx_step, plotter);
+                    #endif
+                    SNN->update_input();
+                }
+                cnt_step++;
+                if ((cnt_step - idx_step) > sim_num_steps) break;
+            }
+            if ((cnt_step - idx_step) > sim_num_steps) break;
+
+
             if (cnt_step >= idx_step) {
                 ey = (int) ((float) ey / SNN->inp_scale[0]);
                 ex = (int) ((float) ex / SNN->inp_scale[1]);
@@ -124,46 +168,6 @@ void feed_network(const std::string& dataset_dir, std::vector<std::string>& data
                 }
             }
 
-            if (ets > ref_time) {
-                if (!cnt_step) ref_time = (int) (ets + sim_step * 1000.f);
-                else ref_time += (int) (sim_step * 1000.f);
-
-                if (cnt_step >= idx_step) {
-
-                    // input integration time different than simulation step
-                    for (int ch = 0; ch < SNN->h_inp_size[0] && sim_step != sim_int; ch++) {
-                        for (int rows = 0; rows < SNN->h_inp_size[1]; rows++) {
-                            for (int cols = 0; cols < SNN->h_inp_size[2]; cols++) {
-                                int idx_node = cols * SNN->h_inp_size[1] + rows;
-                                int idx = ch * SNN->h_inp_size[1] * SNN->h_inp_size[2] *
-                                        SNN->h_length_delay_inp[0] + idx_node * SNN->h_length_delay_inp[0];
-                                int idx_ets = ch * SNN->h_inp_size[1] * SNN->h_inp_size[2] + idx_node;
-                                if (inputs_ets[idx_ets] > (float) ref_time - (sim_int + 1.f) * sim_step * 1000.f)
-                                    SNN->h_inputs[idx]++;
-                                else
-                                    SNN->h_inputs[idx] = 0;
-                            }
-                        }
-                    }
-
-                    // feed the network
-                    SNN->feed(break_feed);
-                    if (break_feed) break;
-                    #ifdef OPENGL
-                    if (openGL && !break_sim_data) {
-                        SNN->copy_to_host();
-                        plotter->update(SNN, cnt_step-idx_step);
-                    }
-                    #endif
-                    #ifdef NPY
-                    if (record_activity)
-                        activity_to_npy(SNN, snapshots_dir, weights_out, cnt_runs, cnt_step-idx_step, plotter);
-                    #endif
-                    SNN->update_input();
-                }
-                cnt_step++;
-                if ((cnt_step - idx_step) > sim_num_steps) break;
-            }
         }
         fclose(fp);
     }

@@ -8,7 +8,7 @@ LIBSUSR1 = -L/usr/local/lib -lcuSNN -lcnpy -lz -lGL -lGLU -lX11 -lglut
 LIBSUSR2 = -L/usr/local/lib -lcuSNN -lz -lGL -lGLU -lX11 -lglut
 LIBSUSR3 = -L/usr/local/lib -lcuSNN -lcnpy -lz
 LIBSUSR4 =
-LIBSCUSTOM =
+LIBSCUSTOM = -I/home/emil/cuSNN/include -L/home/emil/cuSNN/lib -lcuSNN
 
 ifeq ($(PLOTTER),true)
     ifeq ($(SNAPSHOT),true)
