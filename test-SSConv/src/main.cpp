@@ -31,13 +31,13 @@ int main(int argc, char** argv){
     /////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // dataset
-    const std::string dataset_dir = "../data/simulated_data";
-    const int inp_size[] = {2, 25, 25}; // (channels, height, width)
-    const float inp_scale[] = {1.f, 1.f}; // (height, width)
+    const std::string dataset_dir = "../data/roadmap";
+    const int inp_size[] = {2, 264, 320}; // (channels, height, width)
+    const float inp_scale[] = {2.f, 2.f}; // (height, width)
 
     // simulation settings
     const int runs = 1000000;
-    const float sim_time = 30.f; // ms
+    const float sim_time = 150.f; // ms
     const float sim_step = 1.f; // ms
     const float sim_int = 1.f; // sim_steps input integration
     const float scale_ets = 1.f;
@@ -49,7 +49,7 @@ int main(int argc, char** argv){
     const bool data_augmentation = true;
     const int store_model_it_gap = -1;
     std::vector<int> kernels_display_idx = {0, 128};
-    std::string weights_dir = "../weights/simulated_data";
+    std::string weights_dir = "../weights/roadmap";
     std::string snapshots_dir = "../cuSNN_snapshots";
 
     // neuron and synapse models
@@ -84,7 +84,7 @@ int main(int argc, char** argv){
                        float synapse_inh_scaling = 0.f, int rf_side = 7, int out_channels = 8,
                        std::string padding = "none", float w_init = 0.5f); */
     SNN->h_layers = (Layer **) malloc(sizeof(Layer*) * 5);
-    SNN->add_layer("Conv2d", false, true, true, 0.5f, 5.f, 0.4f, 1.f, 1, 0.f, 7, 4, "none");
+    SNN->add_layer("Conv2d", false, true, true, 0.4f, 5.f, 0.25f, 1.f, 1, 0.f, 5, 16, "half");
     SNN->create_network(break_sim);
 
     // visualization
